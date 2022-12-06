@@ -1,24 +1,8 @@
 #include <iostream>
-#include "hash_table/hash_table.h"
+#include "node.h"
 
 #ifndef INVERTED_INDEX_LINKED_LIST_H
 #define INVERTED_INDEX_LINKED_LIST_H
-
-template <class valueT> class LinkedListNode {
-public:
-    HashtableNode<valueT>* hashtableNode;
-    LinkedListNode *next = nullptr;
-    LinkedListNode(HashtableNode<valueT>* newValue) {
-        hashtableNode = newValue;
-    };
-    void display() {
-        std::cout << "<LinkedListNode value=";
-        hashtableNode->display();
-        std::cout << ">";
-
-    }
-};
-
 template <class valueT> class LinkedList {
     LinkedListNode<valueT>* head;
 
