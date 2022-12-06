@@ -26,7 +26,7 @@ public:
     bool update(HashtableNode<valueT>* newNode) {
         LinkedListNode<valueT>* currentNode = head;
         while (currentNode != nullptr) {
-            if (*currentNode->hashtableNode == *newNode) {
+            if (currentNode->hashtableNode->key == newNode->key) {
                 currentNode->hashtableNode = newNode;
                 return true;
             }
@@ -35,15 +35,22 @@ public:
         return false;
     }
 
-    bool find(HashtableNode<valueT>* hashtableNode) {
+    HashtableNode<valueT>* find(const std::string& key) {
         LinkedListNode<valueT>* currentNode = head;
         while (currentNode != nullptr) {
-            if (*currentNode->hashtableNode == *hashtableNode) {
-                return true;
+            if (currentNode->hashtableNode->key == key) {
+                return currentNode->hashtableNode;
             }
             currentNode = currentNode->next;
         }
-        return false;
+        return nullptr;
+    }
+
+    HashtableNode<valueT>* pop() {
+        if (head == nullptr) return nullptr;
+        LinkedListNode<valueT>* popped = head;
+        head = head->next;
+        return popped->hashtableNode;
     }
 
     void print() {
