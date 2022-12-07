@@ -10,8 +10,10 @@
 template <class valueT> class HashTable {
     unsigned long size;
     unsigned long bucketsUsed;
+    const float LOAD_FACTOR = 0.75;
 
     LinkedList<valueT>** array;
+    // todo: initialize array of chunk-based-mutexes
 
     void initializeArray(LinkedList<valueT>** arr, unsigned long arraySize) {
         for (int i = 0; i < arraySize; i++) {
@@ -55,24 +57,24 @@ public:
 
     // inserts the node if key doesn't exist
     // updates the node's value if key exist
+    // todo: should be concurrent safe
     void set(std::string key, valueT value) {
         unsigned long index = this->getIndex(key);
         auto* node = new HashtableNode<valueT>(key, value);
 
-        if (array[index]->find(node->key) != nullptr) {
+        // determining if the new node will be added
+        bool isNewKey = array[index]->find(node->key) == nullptr;
+        bool shouldResize = (float)(bucketsUsed + isNewKey) / size > LOAD_FACTOR;
+
+        if (!isNewKey) {
             array[index]->update(node);
         } else {
             array[index]->push(node);
+            bucketsUsed++;
         }
-        bucketsUsed++;
 
-        if ((float)bucketsUsed / size > 0.75) {
-            std::cout << "resizing" << std::endl;
-            std::cout << "buckets used - " << bucketsUsed << std::endl;
-            std::cout << "current size - " << size;
-
+        if (shouldResize) {
             resize();
-            std::cout << ", new size - " << size << std::endl;
         }
     }
 
