@@ -9,11 +9,16 @@
 #define INVERTED_INDEX_HASH_TABLE_H
 template <class valueT> class HashTable {
     unsigned long size;
-    unsigned long bucketsUsed;
+    unsigned long bucketsUsed; // todo: make atomic
     const float LOAD_FACTOR = 0.75;
 
     LinkedList<valueT>** array;
     // todo: initialize array of chunk-based-mutexes
+    // todo: initialize ongoingResize
+    // todo: initialize resize cv
+    // todo: initialize concurrentWriters atomic
+    // todo: initialize checkResize mtx
+
 
     void initializeArray(LinkedList<valueT>** arr, unsigned long arraySize) {
         for (int i = 0; i < arraySize; i++) {
@@ -59,29 +64,51 @@ public:
     // updates the node's value if key exist
     // todo: should be concurrent safe
     void set(std::string key, valueT value) {
+        // todo: if ongoingResize is already True
+            // todo: wait on cv until the resize is finished
+
+        // todo: increment concurrentWriters counter (should be atomic)
         unsigned long index = this->getIndex(key);
         auto* node = new HashtableNode<valueT>(key, value);
 
-        // determining if the new node will be added
-        bool isNewKey = array[index]->find(node->key) == nullptr;
-        bool shouldResize = (float)(bucketsUsed + isNewKey) / size > LOAD_FACTOR;
-
-        if (!isNewKey) {
+        // todo: get the chunk mutex and lock it
+        if (array[index]->find(node->key) != nullptr) {
             array[index]->update(node);
         } else {
             array[index]->push(node);
+            // todo: make atomic or secure with a mutex
             bucketsUsed++;
         }
+        // todo: unlock chunk mutex
 
-        if (shouldResize) {
+        // todo: lock checkResize mutex
+        // todo: if ongoingResize = True
+            // todo: unlock checkResize mutex
+            // todo: decrement concurrentWriters
+            // todo: exit
+
+        if ((float)bucketsUsed / size > LOAD_FACTOR) {
+            // todo: set ongoingResize to True
+            // todo: unlock checkResize mutex
+            // todo: wait until concurrentWriters == 1
             resize();
+            // todo: set ongoingResize to False
+            // todo: notify the resizing cv
+        } else {
+            // todo: unlock checkResize mutex
         }
+
+        // todo: decrement concurrentWriters
     }
 
     // returns node's value if the node with key exists
     // returns nullptr if node with key does not exist
     valueT get(std::string key, valueT defaultValue) {
+        // todo: if ongoingResize is already True
+            // todo: wait on cv until the resize is finished
+
         unsigned long index = this->getIndex(key);
+        // todo: lock guard chunk mutex
         auto foundNode = array[index]->find(key);
         if (foundNode != nullptr) {
             return foundNode->value;
