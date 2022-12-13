@@ -1,30 +1,54 @@
-#include <string>
 #include <iostream>
 #include <string>
+#include <cmath>
+
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
 
 #include "node.h"
 #include "linked_list.h"
 
 #ifndef INVERTED_INDEX_HASH_TABLE_H
 #define INVERTED_INDEX_HASH_TABLE_H
-template <class valueT> class HashTable {
+
+std::mutex safePrintMtx;
+
+void safe_print(const std::string& message, const std::string& key) {
+    safePrintMtx.lock();
+    std::cout << "Thread with key=" << key << ": " << message << std::endl;
+    safePrintMtx.unlock();
+}
+
+template <class valueT> class ConcurrentHashTable {
     unsigned long size;
-    unsigned long bucketsUsed; // todo: make atomic
     const float LOAD_FACTOR = 0.75;
-
     LinkedList<valueT>** array;
-    // todo: initialize array of chunk-based-mutexes
-    // todo: initialize ongoingResize
-    // todo: initialize resize cv
-    // todo: initialize concurrentWriters atomic
-    // todo: initialize checkResize mtx
 
+    // thread safe members
+    std::atomic<bool> ongoingResize;
+    std::atomic<unsigned long> bucketsUsed;
+    std::atomic<unsigned int> concurrentWriters;
+
+    // synchronization members
+    unsigned long CHUNK_SIZE = 100;
+    std::mutex checkResizeMtx, resizingCvMtx;
+    std::condition_variable resizingCv;
+    std::mutex** chunkMutexesArray;
+    unsigned long chunkMutexesArraySize;
 
     void initializeArray(LinkedList<valueT>** arr, unsigned long arraySize) {
         for (int i = 0; i < arraySize; i++) {
             arr[i] = new LinkedList<valueT>();
         }
     }
+
+    void initializeChunkMutexesArray(int newSize) {
+        for (int i = 0; i < newSize; i++) {
+            chunkMutexesArray[i] = new std::mutex;
+        }
+    }
+
     static unsigned long getHash(const std::string& key) {
         std::hash<std::string> hash;
         return hash(key);
@@ -34,6 +58,19 @@ template <class valueT> class HashTable {
         return HashTable::getHash(key) % size;
     }
 
+    void unsafeSet(std::string key, valueT value) {
+        unsigned long index = this->getIndex(key);
+        auto* node = new HashtableNode<valueT>(key, value);
+
+        if (array[index]->find(node->key) != nullptr) {
+            array[index]->update(node);
+        } else {
+            array[index]->push(node);
+            bucketsUsed++;
+        }
+    }
+
+
     void resize() {
         auto oldSize = size;
         auto oldArray = array;
@@ -42,73 +79,135 @@ template <class valueT> class HashTable {
         array = new LinkedList<valueT>* [size];
         initializeArray(array, size);
 
+        chunkMutexesArraySize = getChunkMtxArraySize();
+        chunkMutexesArray = new std::mutex* [chunkMutexesArraySize];
+        initializeChunkMutexesArray(chunkMutexesArraySize);
 
         for (int i = 0; i < oldSize; i++) {
             HashtableNode<std::string>* popped;
             while ((popped = oldArray[i]->pop())!= nullptr) {
-                set(popped->key, popped->value);
+                unsafeSet(popped->key, popped->value);
             }
         }
         // TODO: delete all elements first
         delete [] oldArray;
     }
 
+    void waitConcurrentWriters(unsigned int desiredValue) {
+        while(concurrentWriters != desiredValue) {
+        }
+    }
+
+    void waitResizing() {
+        std::unique_lock<std::mutex> lck(resizingCvMtx);
+        while (ongoingResize) resizingCv.wait(lck);
+    }
+
+    unsigned long getChunkMtxIndex(int arrayIndex) {
+        return floor((double)arrayIndex / CHUNK_SIZE);
+    }
+
+    unsigned long getChunkMtxArraySize() {
+        return ceil((double)size / CHUNK_SIZE);
+    }
+
 public:
-    HashTable(unsigned long initialSize=512) {
+    ConcurrentHashTable(unsigned long initialSize=512) {
         size = initialSize;
         array = new LinkedList<valueT>* [size];
         initializeArray(array, size);
+
+        ongoingResize = false;
+        concurrentWriters = 0;
+
+        chunkMutexesArraySize = getChunkMtxArraySize();
+        chunkMutexesArray = new std::mutex* [chunkMutexesArraySize];
+        initializeChunkMutexesArray(chunkMutexesArraySize);
     }
 
-    // inserts the node if key doesn't exist
+    // inserts the node key if key doesn't exist
     // updates the node's value if key exist
-    // todo: should be concurrent safe
     void set(std::string key, valueT value) {
-        // todo: if ongoingResize is already True
-            // todo: wait on cv until the resize is finished
+        safe_print("adding node: "+ key + ":" + value, key);
 
-        // todo: increment concurrentWriters counter (should be atomic)
+        if (ongoingResize) {
+            safe_print("waiting for ongoingResize to finish", key);
+            safe_print(" concurrentWriters=" + std::to_string(concurrentWriters), key);
+            waitResizing();
+        }
+        concurrentWriters++;
+        safe_print("Entering critical section and adding node", key);
+        safe_print(" concurrentWriters=" + std::to_string(concurrentWriters), key);
+
+
         unsigned long index = this->getIndex(key);
         auto* node = new HashtableNode<valueT>(key, value);
+        safe_print("here1", key);
 
-        // todo: get the chunk mutex and lock it
+        // locking the chunk
+        unsigned long chunkIndex = getChunkMtxIndex(index);
+        safe_print("index = " + std::to_string(index) + ", chunkIndex = " + std::to_string(chunkIndex) + ", mtxArrSize = " + std::to_string(chunkMutexesArraySize), key);
+        chunkMutexesArray[chunkIndex]->lock();
+
+
         if (array[index]->find(node->key) != nullptr) {
             array[index]->update(node);
         } else {
             array[index]->push(node);
-            // todo: make atomic or secure with a mutex
             bucketsUsed++;
         }
-        // todo: unlock chunk mutex
 
-        // todo: lock checkResize mutex
-        // todo: if ongoingResize = True
-            // todo: unlock checkResize mutex
-            // todo: decrement concurrentWriters
-            // todo: exit
+        chunkMutexesArray[chunkIndex]->unlock();
 
-        if ((float)bucketsUsed / size > LOAD_FACTOR) {
-            // todo: set ongoingResize to True
-            // todo: unlock checkResize mutex
-            // todo: wait until concurrentWriters == 1
-            resize();
-            // todo: set ongoingResize to False
-            // todo: notify the resizing cv
-        } else {
-            // todo: unlock checkResize mutex
+        safe_print("checking resize", key);
+        // other thread operating on a table
+        // is going to make a resize
+        checkResizeMtx.lock();
+        if (ongoingResize) {
+            safe_print("abort checking resize", key);
+            checkResizeMtx.unlock();
+            concurrentWriters--;
+            return;
         }
 
-        // todo: decrement concurrentWriters
+        // check if resize is needed
+        if ((float)bucketsUsed / size > LOAD_FACTOR) {
+            safe_print("ongoing resize is needed, setting ongoingResize = true", key);
+            ongoingResize = true;
+            checkResizeMtx.unlock();
+            // wait until all other writers will finish their work
+            safe_print("waiting concurrent writers to leave", key);
+            waitConcurrentWriters(1);
+
+            safe_print("starting resize", key);
+            resize();
+            safe_print("finishing resize", key);
+
+            ongoingResize = false;
+            safe_print("notifying cv", key);
+            resizingCv.notify_all();
+        } else {
+            // resize is not needed
+            safe_print("resize not needed exiting", key);
+            checkResizeMtx.unlock();
+        }
+
+        concurrentWriters--;
     }
 
     // returns node's value if the node with key exists
     // returns nullptr if node with key does not exist
     valueT get(std::string key, valueT defaultValue) {
-        // todo: if ongoingResize is already True
-            // todo: wait on cv until the resize is finished
+        if (ongoingResize) {
+            waitResizing();
+        }
 
         unsigned long index = this->getIndex(key);
-        // todo: lock guard chunk mutex
+
+        // locking the chunk
+        unsigned long chunkIndex = getChunkMtxIndex(index);
+        std::lock_guard<std::mutex> lck(*chunkMutexesArray[chunkIndex]);
+
         auto foundNode = array[index]->find(key);
         if (foundNode != nullptr) {
             return foundNode->value;
