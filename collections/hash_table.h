@@ -12,13 +12,6 @@
 #ifndef INVERTED_INDEX_HASH_TABLE_H
 #define INVERTED_INDEX_HASH_TABLE_H
 
-std::mutex safePrintMtx;
-
-void safe_print(const std::string& message, const std::string& key) {
-    safePrintMtx.lock();
-    std::cout << "Thread with key=" << key << ": " << message << std::endl;
-    safePrintMtx.unlock();
-}
 
 template <class valueT> class ConcurrentHashTable {
     unsigned long size;

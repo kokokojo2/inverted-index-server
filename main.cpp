@@ -4,6 +4,13 @@
 #include "collections/linked_list.h"
 #include "collections/hash_table.h"
 
+std::mutex safePrintMtx;
+
+void safe_print(const std::string& message, const std::string& key) {
+    safePrintMtx.lock();
+    std::cout << "Thread with key=" << key << ": " << message << std::endl;
+    safePrintMtx.unlock();
+}
 
 auto *hashTable = new ConcurrentHashTable<std::string>(1);
 
