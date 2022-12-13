@@ -12,11 +12,11 @@ void safe_print(const std::string& message, const std::string& key) {
     safePrintMtx.unlock();
 }
 
-auto *hashTable = new ConcurrentHashTable<std::string>(1);
+auto *concurrentHashTable = new ConcurrentHashTable<std::string>(1);
 
 void testHashTable(int size, int start) {
     for (int i = start; i < start + size; i++) {
-        hashTable->set(std::to_string(i), "Text for node with key = " + std::to_string(i));
+        concurrentHashTable->set(std::to_string(i), "Text for node with key = " + std::to_string(i));
     }
 }
 
@@ -33,13 +33,24 @@ int main() {
 
     int i = 0;
     while(i < 3000) {
-        std::string val = hashTable->get(std::to_string(i), "None");
+        std::string val = concurrentHashTable->get(std::to_string(i), "None");
         std::cout << "key = " << std::to_string(i) << " value = " << val << std::endl;
         i++;
 
         // if (val == "None") break;
     }
 
+    auto *hashTable = new HashTable<std::string>(1);
+    for (i = 0; i < 10000; i++) {
+        hashTable->set(std::to_string(i), "Text for node with key = " + std::to_string(i));
+    }
+
+    i = 0;
+    while(i < 10000) {
+        std::string val = hashTable->get(std::to_string(i), "None");
+        std::cout << "key = " << std::to_string(i) << " value = " << val << std::endl;
+        i++;
+    }
 
 
     return 0;
