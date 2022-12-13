@@ -3,6 +3,7 @@
 
 #include "collections/linked_list.h"
 #include "collections/hash_table.h"
+#include "collections/set.h"
 
 std::mutex safePrintMtx;
 
@@ -51,6 +52,15 @@ int main() {
         std::cout << "key = " << std::to_string(i) << " value = " << val << std::endl;
         i++;
     }
+
+    auto *set = new Set();
+    set->add("one");
+    set->add("two");
+    set->add("one");
+
+    std::cout << set->has("one") << std::endl;
+    std::cout << set->has("two") << std::endl;
+    std::cout << set->has("three") << std::endl;
 
 
     return 0;
