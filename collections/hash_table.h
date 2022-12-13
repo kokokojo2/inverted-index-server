@@ -48,7 +48,7 @@ template <class valueT> class ConcurrentHashTable {
     }
 
     unsigned long getIndex(const std::string& key) const {
-        return HashTable::getHash(key) % size;
+        return ConcurrentHashTable::getHash(key) % size;
     }
 
     void unsafeSet(std::string key, valueT value) {
