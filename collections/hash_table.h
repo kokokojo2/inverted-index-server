@@ -42,7 +42,7 @@ template <class valueT> class HashTable {
 
 
         for (int i = 0; i < oldSize; i++) {
-            HashtableNode<std::string>* popped;
+            HashtableNode<valueT>* popped;
             while ((popped = oldArray[i]->pop())!= nullptr) {
                 set(popped->key, popped->value);
             }
@@ -157,7 +157,7 @@ template <class valueT> class ConcurrentHashTable {
         initializeChunkMutexesArray(chunkMutexesArraySize);
 
         for (int i = 0; i < oldSize; i++) {
-            HashtableNode<std::string>* popped;
+            HashtableNode<valueT>* popped;
             while ((popped = oldArray[i]->pop())!= nullptr) {
                 unsafeSet(popped->key, popped->value);
             }
@@ -270,6 +270,5 @@ public:
         }
         return defaultValue;
     }
-
 };
 #endif
