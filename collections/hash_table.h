@@ -12,6 +12,7 @@
 #ifndef INVERTED_INDEX_HASH_TABLE_H
 #define INVERTED_INDEX_HASH_TABLE_H
 template <class valueT> class HashTable {
+protected:
     unsigned long size;
     unsigned long bucketsUsed;
     const float LOAD_FACTOR = 0.75;

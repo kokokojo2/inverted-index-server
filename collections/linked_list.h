@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+
 #include "node.h"
 
 #ifndef INVERTED_INDEX_LINKED_LIST_H
@@ -60,6 +62,18 @@ public:
             currentNode = currentNode->next;
             std::cout << std::endl;
         }
+    }
+
+    std::vector<HashtableNode<valueT>*> toVector() {
+        std::vector<HashtableNode<valueT>*> vec;
+        LinkedListNode<valueT>* currentNode = head;
+
+        while (currentNode != nullptr) {
+            vec.push_back(currentNode->hashtableNode);
+            currentNode = currentNode->next;
+        }
+
+        return vec;
     }
 };
 
