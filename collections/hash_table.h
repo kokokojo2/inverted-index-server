@@ -33,6 +33,23 @@ protected:
         return HashTable::getHash(key) % size;
     }
 
+    void unsafeSet(std::string key, valueT value) {
+        unsigned long index = this->getIndex(key);
+        auto* node = new HashtableNode<valueT>(key, value);
+
+        // determining if the new node will be added
+        bool isNewKey = array[index]->find(node->key) == nullptr;
+        bool shouldResize = (float)(bucketsUsed + isNewKey) / size > LOAD_FACTOR;
+
+        if (!isNewKey) {
+            array[index]->update(node);
+        } else {
+            array[index]->push(node);
+            bucketsUsed++;
+        }
+
+    }
+
     void resize() {
         auto oldSize = size;
         auto oldArray = array;
@@ -45,7 +62,7 @@ protected:
         for (int i = 0; i < oldSize; i++) {
             HashtableNode<valueT>* popped;
             while ((popped = oldArray[i]->pop())!= nullptr) {
-                set(popped->key, popped->value);
+                unsafeSet(popped->key, popped->value);
             }
         }
         // TODO: delete all elements first
@@ -53,7 +70,7 @@ protected:
     }
 
 public:
-    HashTable(unsigned long initialSize=512) {
+    HashTable(unsigned long initialSize=64) {
         size = initialSize;
         array = new LinkedList<valueT>* [size];
         initializeArray(array, size);
@@ -95,6 +112,7 @@ public:
 };
 
 template <class valueT> class ConcurrentHashTable {
+protected:
     unsigned long size;
     const float LOAD_FACTOR = 0.75;
     LinkedList<valueT>** array;
