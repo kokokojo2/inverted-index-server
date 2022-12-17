@@ -8,6 +8,7 @@
 
 #include "node.h"
 #include "linked_list.h"
+#include "../utils/io/output.h"
 
 #ifndef INVERTED_INDEX_HASH_TABLE_H
 #define INVERTED_INDEX_HASH_TABLE_H
@@ -151,6 +152,7 @@ protected:
     }
 
     void unsafeSet(std::string key, valueT value) {
+        safe_print("Unsafe Set was used");
         unsigned long index = this->getIndex(key);
         auto* node = new HashtableNode<valueT>(key, value);
 
@@ -225,6 +227,7 @@ public:
         }
         concurrentWriters++;
 
+
         unsigned long index = this->getIndex(key);
         auto* node = new HashtableNode<valueT>(key, value);
 
@@ -271,14 +274,13 @@ public:
     }
 
     // returns node's value if the node with key exists
-    // returns nullptr if node with key does not exist
+    // returns defaultValue if node with key does not exist
     valueT get(std::string key, valueT defaultValue) {
         if (ongoingResize) {
             waitResizing();
         }
-
+        concurrentWriters++;
         unsigned long index = this->getIndex(key);
-
         // locking the chunk
         unsigned long chunkIndex = getChunkMtxIndex(index);
         std::lock_guard<std::mutex> lck(*chunkMutexesArray[chunkIndex]);
@@ -287,7 +289,31 @@ public:
         if (foundNode != nullptr) {
             return foundNode->value;
         }
+        concurrentWriters--;
         return defaultValue;
     }
+
+    // returns node's value if the node with key exists
+    // set's provided defaultValue if the node with key doesn't exist and returns that value
+    valueT getOrSetDefault(std::string key, valueT defaultValue) {
+        if (ongoingResize) {
+            waitResizing();
+        }
+        concurrentWriters++;
+        unsigned long index = this->getIndex(key);
+        // locking the chunk
+        unsigned long chunkIndex = getChunkMtxIndex(index);
+        std::lock_guard<std::mutex> lck(*chunkMutexesArray[chunkIndex]);
+
+        auto foundNode = array[index]->find(key);
+        if (foundNode != nullptr) {
+            return foundNode->value;
+        }
+        unsafeSet(key, defaultValue);
+
+        concurrentWriters--;
+        return defaultValue;
+    }
+
 };
 #endif
