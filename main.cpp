@@ -5,19 +5,12 @@
 #include "collections/hash_table.h"
 #include "collections/set.h"
 #include "collections/inverted_index.h"
-
-std::mutex safePrintMtx;
-
-void safe_print(const std::string& message) {
-    safePrintMtx.lock();
-    std::cout << "Thread with id=" <<  std::this_thread::get_id() << ": " << message << std::endl;
-    safePrintMtx.unlock();
-}
+#include "utils/io/output.h"
 
 auto *concurrentHashTable = new ConcurrentHashTable<std::string>(1);
 void batchSetConcurrentHashTable(int size, int start) {
     for (int i = start; i < start + size; i++) {
-        //concurrentHashTable->set(std::to_string(i), "Text for node with key = " + std::to_string(i));
+        concurrentHashTable->set(std::to_string(i), "Text for node with key = " + std::to_string(i));
     }
 }
 
@@ -48,7 +41,7 @@ auto *concurrentInvertedIndex = new ConcurrentInvertedIndex();
 void batchInsertInvertedIndex(int size, int start, int procId) {
     for (int i = start; i < start + size; i++) {
         safe_print("inserting word key = " + std::to_string(i));
-        concurrentInvertedIndex->addToIndex(std::to_string(i), "some sample doc id" + std::to_string(i) + " ins by " + std::to_string(procId), procId);
+        concurrentInvertedIndex->addToIndex(std::to_string(i), "some sample doc id" + std::to_string(i) + " ins by " + std::to_string(procId));
     }
 }
 
@@ -82,6 +75,6 @@ void testInvertedIndex (int testSize) {
 
 
 int main() {
-    testInvertedIndex(60000);
+    testInvertedIndex(100000);
     return 0;
 }
