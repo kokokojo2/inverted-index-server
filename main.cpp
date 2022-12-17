@@ -8,9 +8,9 @@
 
 std::mutex safePrintMtx;
 
-void safe_print(const std::string& message, const std::string& key) {
+void safe_print(const std::string& message) {
     safePrintMtx.lock();
-    std::cout << "Thread with key=" << key << ": " << message << std::endl;
+    std::cout << "Thread with id=" <<  std::this_thread::get_id() << ": " << message << std::endl;
     safePrintMtx.unlock();
 }
 
@@ -47,7 +47,7 @@ auto *concurrentInvertedIndex = new ConcurrentInvertedIndex();
 
 void batchInsertInvertedIndex(int size, int start, int procId) {
     for (int i = start; i < start + size; i++) {
-        safe_print("inserting word key = " + std::to_string(i), std::to_string(procId));
+        safe_print("inserting word key = " + std::to_string(i));
         concurrentInvertedIndex->addToIndex(std::to_string(i), "some sample doc id" + std::to_string(i) + " ins by " + std::to_string(procId), procId);
     }
 }
