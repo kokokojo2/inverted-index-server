@@ -213,6 +213,7 @@ public:
 
         ongoingResize = false;
         concurrentWriters = 0;
+        bucketsUsed = 0;
 
         chunkMutexesArraySize = getChunkMtxArraySize();
         chunkMutexesArray = new std::mutex* [chunkMutexesArraySize];
