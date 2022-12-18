@@ -6,6 +6,8 @@
 #include "collections/set.h"
 #include "collections/inverted_index.h"
 #include "utils/io/output.h"
+#include "utils/str.h"
+#include "routines/index.h"
 
 auto *concurrentHashTable = new ConcurrentHashTable<std::string>(1);
 void batchSetConcurrentHashTable(int size, int start) {
