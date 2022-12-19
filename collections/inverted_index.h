@@ -8,7 +8,7 @@
 
 class ConcurrentInvertedIndex : ConcurrentHashTable<Set*> {
 public:
-    ConcurrentInvertedIndex() : ConcurrentHashTable<Set*>(6) {};
+    ConcurrentInvertedIndex(unsigned long initialSize) : ConcurrentHashTable<Set*>(initialSize) {};
 
     void addToIndex(const std::string& word, std::string docId) {
         auto set = ConcurrentHashTable<Set*>::getOrSetDefault(word, new Set());

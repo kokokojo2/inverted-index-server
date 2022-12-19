@@ -9,7 +9,7 @@
 // does not store any value
 class Set : ConcurrentHashTable<bool> {
 public:
-    Set() : ConcurrentHashTable<bool>(512) {}
+    Set() : ConcurrentHashTable<bool>(8) {}
 
     void add(std::string key) {
         ConcurrentHashTable<bool>::set(std::move(key), true);
