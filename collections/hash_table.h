@@ -152,7 +152,6 @@ protected:
     }
 
     void unsafeSet(std::string key, valueT value) {
-        safe_print("Unsafe Set was used");
         unsigned long index = this->getIndex(key);
         auto* node = new HashtableNode<valueT>(key, value);
 
@@ -213,6 +212,7 @@ public:
 
         ongoingResize = false;
         concurrentWriters = 0;
+        bucketsUsed = 0;
 
         chunkMutexesArraySize = getChunkMtxArraySize();
         chunkMutexesArray = new std::mutex* [chunkMutexesArraySize];
