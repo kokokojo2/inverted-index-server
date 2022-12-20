@@ -72,3 +72,19 @@ void testBuildIndex() {
     std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
 
 }
+
+
+void testSocketServer() {
+    auto socket = Socket(SERVER_PORT);
+    socket.bindAndListen();
+    auto connection = socket.waitForConnection();
+    std::cout << connection->read() << std::endl;
+    connection->write("Dummy response.");
+}
+
+void testSocketClient() {
+    auto socket = Socket(2022);
+    auto connection = socket.connect(SERVER_ADDRESS, SERVER_PORT);
+    connection->write("Dummy request.");
+    std::cout << connection->read() << std::endl;
+}
