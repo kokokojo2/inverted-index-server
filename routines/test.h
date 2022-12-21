@@ -3,6 +3,7 @@
 #include "../routines/index.h"
 #include "../network/socket.h"
 #include "../network/constant.h"
+#include "../network/protocol.h"
 
 #ifndef INVERTED_INDEX_TEST_H
 #define INVERTED_INDEX_TEST_H
@@ -11,4 +12,5 @@ void testInvertedIndex (int testSize);
 void testBuildIndex();
 void testSocketServer();
 void testSocketClient();
+void testProtocolStructures();
 #endif

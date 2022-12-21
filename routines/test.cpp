@@ -88,3 +88,20 @@ void testSocketClient() {
     connection->write("Dummy request.");
     std::cout << connection->read() << std::endl;
 }
+
+void testProtocolStructures() {
+    std::string rawRequest = "1:dummy_word";
+    auto request = new Request(rawRequest);
+    std::cout << "request from text" << std::endl;
+    request->print();
+    std::cout << "request to text" << std::endl;
+    std::cout << request->toText() << std::endl;
+
+    std::vector<std::string> docIds = {"doc1", "doc2", "doc5"};
+    auto response = new Response(1, docIds);
+    std::cout << "response to text" << std::endl;
+    std::cout << response->toText() << std::endl;
+    std::cout << "response from text" << std::endl;
+    auto res = Response(response->toText());
+    response->print();
+}
