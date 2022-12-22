@@ -85,7 +85,8 @@ void Connection::write(const std::string &message) {
 }
 
 std::string Connection::read() {
-    int bufferSize = 1024;
+    // fixme: use generic reading algorithm
+    int bufferSize = 64000;
     char receivedMessage [bufferSize];
 
     int messageSize = ::read(
