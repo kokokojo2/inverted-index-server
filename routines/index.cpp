@@ -5,8 +5,10 @@
 #include "index.h"
 #include "../utils/str.h"
 
-void buildIndex(ConcurrentInvertedIndex* index, int threadsNum) {
-    auto files = getFiles();
+void buildIndex(const std::string& rootFolderPath, ConcurrentInvertedIndex* index, int threadsNum) {
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    auto files = getFiles(rootFolderPath);
+    std::cout << "size -" << files.size() << std::endl;
     if (threadsNum > files.size()) std::cout << "Thread number is too big for given set of files." << std::endl;
     unsigned long end, start = 0, chunkSize = files.size() / threadsNum;
 
@@ -21,18 +23,19 @@ void buildIndex(ConcurrentInvertedIndex* index, int threadsNum) {
     for (int i = 0; i < threadsNum; i++) {
         workers[i].join();
     }
-
+    std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
+    std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin).count() << "[ms]" << std::endl;
 }
 
-std::vector<std::string> getFiles(){
+std::vector<std::string> getFiles(const std::string& rootFolderPath){
     std::vector<std::string> files;
     for (const auto & folderPath : foldersToIndex) {
         DIR *dir;
         struct dirent *ent;
-        if ((dir = opendir(folderPath.c_str())) != nullptr) {
+        if ((dir = opendir((rootFolderPath + folderPath).c_str())) != nullptr) {
             while ((ent = readdir(dir)) != nullptr) {
                 if (ent->d_type == DT_REG) {
-                    files.push_back(folderPath + "/" + std::string(ent->d_name));
+                    files.push_back(rootFolderPath + folderPath + "/" + std::string(ent->d_name));
                 }
             }
         }

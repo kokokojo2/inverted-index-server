@@ -66,11 +66,7 @@ void testInvertedIndex (int testSize) {
 
 void testBuildIndex() {
     auto *concurrentInvertedIndex = new ConcurrentInvertedIndex(100000);
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    buildIndex(concurrentInvertedIndex, 1);
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
-
+    buildIndex("..", concurrentInvertedIndex, 1);
 }
 
 
