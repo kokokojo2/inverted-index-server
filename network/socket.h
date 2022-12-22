@@ -15,6 +15,7 @@ public:
     explicit Connection(int connectionDesc);
     void write(const std::string& message);
     std::string read();
+    void close();
 };
 
 class Socket {

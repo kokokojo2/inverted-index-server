@@ -102,3 +102,7 @@ std::string Connection::read() {
 
     return std::string(receivedMessage);
 }
+
+void Connection::close() {
+    ::close(this->fd);
+}
