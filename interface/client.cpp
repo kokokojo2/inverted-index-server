@@ -19,7 +19,12 @@ void IndexClient::run() {
             option = inputOption(std::vector<int> {1, 2}, false);
             if (option != -1) break;
         }
-        if (option == 2) return;
+        if (option == 2) {
+            auto request = new Request(OPERATION_EXIT);
+            connection->write(request->toText());
+            connection->close();
+            return;
+        }
         if (option == 1) {
             std::cout << "Input word (no spaces allowed): ";
             std::string word = inputWord(true, true);

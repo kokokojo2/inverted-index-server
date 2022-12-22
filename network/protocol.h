@@ -9,6 +9,7 @@
 #define INVERTED_INDEX_PROTOCOL_H
 
 #define OPERATION_GET 1
+#define OPERATION_EXIT 2
 
 class Request {
     // OPERATION:arg1, arg2, ..., argn  (optional - depends on operation logic)
@@ -22,6 +23,7 @@ public:
     int operation;
     bool valid;
 
+    Request(int operation);
     Request(std::string raw);
     static Request* fromConnection(Connection* connection);
     void print() const;

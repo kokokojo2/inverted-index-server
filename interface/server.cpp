@@ -30,6 +30,11 @@ void IndexServer::handleConnection(Connection *connection) {
         safe_print("Serving new request:\n");
         request->print();
 
+        if (request->operation == OPERATION_EXIT) {
+            connection->close();
+            break;
+        }
+
         Response* response;
         if (request->operation == OPERATION_GET) {
             auto docIdsSet = this->index->getDocIds(request->word);

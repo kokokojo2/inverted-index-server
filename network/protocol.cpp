@@ -29,13 +29,18 @@ void Request::parse() {
 }
 
 bool Request::operationValid(int rawOperation) {
-    return rawOperation == OPERATION_GET;
+    return rawOperation == OPERATION_GET || rawOperation == OPERATION_EXIT;
 }
 
 Request::Request(std::string raw)  {
     this->rawText = std::move(raw);
     parse();
 }
+
+Request::Request(int operation) {
+    this->operation = operation;
+    this->valid = true;
+};
 
 Request *Request::fromConnection(Connection *connection) {
     auto rawRequest = connection->read();
@@ -44,11 +49,12 @@ Request *Request::fromConnection(Connection *connection) {
 
 void Request::print() const  {
     safe_print("<Request status=" + getStatusRepr(valid) + this->errorMessage + " operation=" +
-    getOperationRepr(this->operation) + " word=" +this->word + ">");
+    getOperationRepr(this->operation) + (!this->word.empty() ? " word="+this->word : "") + ">");
 }
 
 std::string Request::getOperationRepr(int o) {
     if (o == OPERATION_GET) return "get";
+    if (o == OPERATION_EXIT) return "exit";
     return "unknown";
 }
 
