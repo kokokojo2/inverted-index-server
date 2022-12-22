@@ -15,6 +15,12 @@ bool isNotAlNum(char c) {
     return isalnum(c) == 0 && c != ' ';
 }
 
+
+bool isNumber(const std::string& s) {
+    return !s.empty() && std::find_if(s.begin(),
+       s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
+}
+
 std::string cleanString(std::string str) {
     str.erase(remove_if(str.begin(), str.end(), isNotAlNum), str.end());
     return str;
@@ -37,3 +43,8 @@ std::string joinStrings(const std::vector<std::string>& vector, char delimiter) 
     return result;
 }
 
+bool checkStringAlNum(const std::string& string) {
+    for (auto & character : string)
+        if (isNotAlNum(character)) return false;
+    return true;
+}
