@@ -47,6 +47,7 @@ std::vector<std::string> getFiles(const std::string& rootFolderPath){
 void indexFileChunk(ConcurrentInvertedIndex* index, const std::vector<std::string>& filesVec, int start, int end) {
     for (int i = start; i < end; i++) {
         auto words = getWords(filesVec[i]);
+        safe_print("Indexing file '" + filesVec[i] + "'");
         for (auto & word : words) {
             index->addToIndex(word, filesVec[i]);
         }

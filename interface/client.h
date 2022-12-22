@@ -10,9 +10,10 @@
 class IndexClient {
     std::string serverHost;
     int port;
+    int clientPort;
     Socket* socket;
 public:
-    IndexClient(const std::string& host, int port);
+    IndexClient(const std::string& host, int port, int clientPort);
     void run ();
 };
 

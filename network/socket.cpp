@@ -81,7 +81,7 @@ void Connection::write(const std::string &message) {
         safe_print("Some error occur while writing the message.");
         exit(EXIT_FAILURE);
     }
-    safe_print("Message was sent.");
+    //safe_print("Message was sent.");
 }
 
 std::string Connection::read() {

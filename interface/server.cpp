@@ -27,7 +27,7 @@ void IndexServer::run() {
 void IndexServer::handleConnection(Connection *connection) {
     while(true) {
         auto request = Request::fromConnection(connection);
-        safe_print("Serving new request:\n");
+        safe_print("Serving new request:");
         request->print();
 
         if (request->operation == OPERATION_EXIT) {
@@ -41,7 +41,7 @@ void IndexServer::handleConnection(Connection *connection) {
             response = new Response(request->operation, docIdsSet->getItemsVector());
         }
 
-        safe_print("Sending response:\n");
+        safe_print("Sending response:");
         response->print();
         connection->write(response->toText());
     }

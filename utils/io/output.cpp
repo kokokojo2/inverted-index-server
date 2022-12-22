@@ -1,9 +1,11 @@
 #include "output.h"
 
 std::mutex safePrintMtx;
-void safe_print(const std::string& message) {
+void safe_print(const std::string& message, bool printThreadId) {
     safePrintMtx.lock();
-    std::cout << "Thread with id=" <<  std::this_thread::get_id() << ": " << message << std::endl;
+    if (printThreadId)
+        std::cout << "Thread with id=" <<  std::this_thread::get_id() << ": ";
+    std::cout << message << std::endl;
     safePrintMtx.unlock();
 }
 
