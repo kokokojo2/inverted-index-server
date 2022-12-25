@@ -66,9 +66,38 @@ void testInvertedIndex (int testSize) {
 
 void testBuildIndex() {
     auto *concurrentInvertedIndex = new ConcurrentInvertedIndex(100000);
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    buildIndex(concurrentInvertedIndex, 1);
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Finished in " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << "[ms]" << std::endl;
+    buildIndex("..", concurrentInvertedIndex, 1);
+}
 
+
+void testSocketServer() {
+    auto socket = Socket(SERVER_PORT);
+    socket.bindAndListen();
+    auto connection = socket.waitForConnection();
+    std::cout << connection->read() << std::endl;
+    connection->write("Dummy response.");
+}
+
+void testSocketClient() {
+    auto socket = Socket(2022);
+    auto connection = socket.connect(SERVER_ADDRESS, SERVER_PORT);
+    connection->write("Dummy request.");
+    std::cout << connection->read() << std::endl;
+}
+
+void testProtocolStructures() {
+    std::string rawRequest = "1:dummy_word";
+    auto request = new Request(rawRequest);
+    std::cout << "request from text" << std::endl;
+    request->print();
+    std::cout << "request to text" << std::endl;
+    std::cout << request->toText() << std::endl;
+
+    std::vector<std::string> docIds = {"doc1", "doc2", "doc5"};
+    auto response = new Response(1, docIds);
+    std::cout << "response to text" << std::endl;
+    std::cout << response->toText() << std::endl;
+    std::cout << "response from text" << std::endl;
+    auto res = Response(response->toText());
+    response->print();
 }
