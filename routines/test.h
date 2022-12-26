@@ -9,7 +9,7 @@
 #define INVERTED_INDEX_TEST_H
 void testHashTable ();
 void testInvertedIndex (int testSize);
-void testBuildIndex();
+void testBuildIndex(int maxThreads);
 void testSocketServer();
 void testSocketClient();
 void testProtocolStructures();

@@ -1,3 +1,4 @@
+#include <fstream>
 #include "test.h"
 
 void batchSetConcurrentHashTable(ConcurrentHashTable<std::string>* concurrentHashTable, int size, int start) {
@@ -37,7 +38,7 @@ void batchInsertInvertedIndex(ConcurrentInvertedIndex* index, int size, int star
 }
 
 void testInvertedIndex (int testSize) {
-    auto *concurrentInvertedIndex = new ConcurrentInvertedIndex(100000);
+    auto *concurrentInvertedIndex = new ConcurrentInvertedIndex(1000000);
 
     std::thread t1(batchInsertInvertedIndex, concurrentInvertedIndex, testSize, 0, 1);
     std::thread t2(batchInsertInvertedIndex, concurrentInvertedIndex, testSize, 0, 2);
@@ -64,9 +65,31 @@ void testInvertedIndex (int testSize) {
     }
 }
 
-void testBuildIndex() {
-    auto *concurrentInvertedIndex = new ConcurrentInvertedIndex(100000);
-    buildIndex("..", concurrentInvertedIndex, 1);
+void testBuildIndex(int maxThreads) {
+    std::cout << "Starting benchmark." << std::endl;
+    std::vector<long> numThreads;
+    std::vector<long> elapsedTime;
+    for (int i = 1; i < maxThreads + 1; i++) {
+        std::cout << "Threads=" << i << std::endl;
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+        auto *concurrentInvertedIndex = new ConcurrentInvertedIndex(100000);
+        buildIndex("..", concurrentInvertedIndex, i);
+
+        std::chrono::steady_clock::time_point end_time = std::chrono::steady_clock::now();
+        elapsedTime.push_back(std::chrono::duration_cast<std::chrono::milliseconds>(end_time - begin).count());
+        numThreads.push_back(i);
+        delete concurrentInvertedIndex;
+    }
+
+    std::ofstream file("benchmark_results.csv");
+    file << "Number of threads, Time milliseconds\n";
+
+    for (int i = 0; i < numThreads.size(); i++) {
+        file << std::to_string(numThreads[i]) + "," + std::to_string(elapsedTime[i]) + '\n';
+    }
+
+    file.close();
 }
 
 

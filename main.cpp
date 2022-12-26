@@ -1,5 +1,6 @@
 #include "interface/server.h"
 #include "interface/client.h"
+#include "routines/test.h"
 
 void runServer() {
     std::cout << "Hello there!" << std::endl;
@@ -19,8 +20,7 @@ void runClient() {
     client->run();
 }
 
-// WARN: if failed to bind socket check port
 int main() {
-    runServer();
+    testBuildIndex(10);
     return 0;
 }
