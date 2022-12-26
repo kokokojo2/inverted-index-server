@@ -1,6 +1,5 @@
 #include "interface/server.h"
-#include "interface/client.h"
-#include "routines/test.h"
+#include "utils/io/input.h"
 
 void runServer() {
     std::cout << "Hello there!" << std::endl;
@@ -12,15 +11,7 @@ void runServer() {
     server->run();
 }
 
-void runClient() {
-    std::cout << "Hello there!" << std::endl;
-    std::cout << "Input port number: ";
-    int port = inputInt(true);
-    auto client = new IndexClient(SERVER_ADDRESS, SERVER_PORT, port);
-    client->run();
-}
-
 int main() {
-    testBuildIndex(10);
+    runServer();
     return 0;
 }
