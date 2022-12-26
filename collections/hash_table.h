@@ -136,10 +136,24 @@ protected:
         }
     }
 
+    void deallocateArray(LinkedList<valueT>** arr, unsigned long arraySize) {
+        for (int i = 0; i < arraySize; i++) {
+            delete arr[i];
+        }
+        delete[] arr;
+    }
+
     void initializeChunkMutexesArray(int newSize) {
         for (int i = 0; i < newSize; i++) {
             chunkMutexesArray[i] = new std::mutex;
         }
+    }
+
+    void deallocateChunkMutexesArray() {
+        for (int i = 0; i < chunkMutexesArraySize; i++) {
+            delete chunkMutexesArray[i];
+        }
+        delete[] chunkMutexesArray;
     }
 
     static unsigned long getHash(const std::string& key) {
@@ -172,18 +186,17 @@ protected:
         array = new LinkedList<valueT>* [size];
         initializeArray(array, size);
 
+        deallocateChunkMutexesArray();
         chunkMutexesArraySize = getChunkMtxArraySize();
         chunkMutexesArray = new std::mutex* [chunkMutexesArraySize];
         initializeChunkMutexesArray(chunkMutexesArraySize);
-
         for (int i = 0; i < oldSize; i++) {
             HashtableNode<valueT>* popped;
             while ((popped = oldArray[i]->pop())!= nullptr) {
                 unsafeSet(popped->key, popped->value);
             }
         }
-        // TODO: delete all elements first
-        delete [] oldArray;
+        deallocateArray(oldArray, oldSize);
     }
 
     void waitConcurrentWriters(unsigned int desiredValue) {
@@ -217,6 +230,10 @@ public:
         chunkMutexesArraySize = getChunkMtxArraySize();
         chunkMutexesArray = new std::mutex* [chunkMutexesArraySize];
         initializeChunkMutexesArray(chunkMutexesArraySize);
+    }
+    ~ConcurrentHashTable() {
+        deallocateChunkMutexesArray();
+        deallocateArray(array, size);
     }
 
     // inserts the node key if key doesn't exist

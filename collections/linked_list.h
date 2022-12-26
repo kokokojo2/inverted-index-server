@@ -13,6 +13,15 @@ public:
         head = nullptr;
     }
 
+    ~LinkedList() {
+        LinkedListNode<valueT> *currentNode = head, *nodeToDelete;
+        while (currentNode != nullptr) {
+            nodeToDelete = currentNode;
+            currentNode = currentNode->next;
+            delete nodeToDelete;
+        }
+    }
+
     // adds newNode element to the front
     void push(HashtableNode<valueT>* hashtableNode) {
         auto* newNode = new LinkedListNode<valueT>(hashtableNode);

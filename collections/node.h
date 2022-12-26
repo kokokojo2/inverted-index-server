@@ -20,6 +20,9 @@ public:
     LinkedListNode(HashtableNode<valueT>* newValue) {
         hashtableNode = newValue;
     };
+    ~LinkedListNode() {
+        delete hashtableNode;
+    };
     void display() {
         std::cout << "<LinkedListNode value=";
         hashtableNode->display();
