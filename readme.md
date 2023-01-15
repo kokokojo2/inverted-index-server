@@ -3,7 +3,7 @@ Inverted inxed is a data structure that is widely used for search optimization. 
 ## Project Overview
 This repo contains implementations of concurrent inverted index along with all required data structures and interface for interacting with it build on top of network sockets.
 Brief modules overview:
-- `collections` - inverted index and related data structures
+- `collections` - concurrent-safe inverted index and related data structures
 - `files_to_index` - text files that are used to build the index
 - `interface` - client and server implementations
 - `network` - network layer code based on sockets, simple text-based communication protocol
