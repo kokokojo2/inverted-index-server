@@ -1,5 +1,5 @@
 # Concurrent Inverted Index
-Inverted inxed is a data structure that's widely used nowadays. This project is just a simple implementation of inverted index written in C++ that was made as a part of coursework of "concurrency & parallelism" university subject.
+Inverted inxed is a data structure that is widely used for search optimization. This project is just a simple implementation of inverted index written in C++ that was made as a part of coursework of "concurrency & parallelism" university subject.
 ## Project Overview
 This repo contains implementations of concurrent inverted index along with all required data structures and interface for interacting with it build on top of network sockets.
 Brief modules overview:
